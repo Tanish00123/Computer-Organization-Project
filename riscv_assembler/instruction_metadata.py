@@ -2,13 +2,11 @@
 
 class InstructionMetadata:
     def __init__(self):
-        self.instructions = self._build_instruction_table()
+        self.instructions = self.instruction_table()
 
-    def _build_instruction_table(self):
-        """
-        Builds dictionary containing instruction encoding metadata.
-        """
+    def instruction_table(self):
 
+        #From Table 3,5,7,9,11,13 from the assignment
         instruction_table = {
 
             # R-Type
@@ -49,24 +47,19 @@ class InstructionMetadata:
 
         return instruction_table
 
-    def get_instruction_info(self, mnemonic):
-        """
-        Returns metadata dictionary for instruction.
-        Raises error if invalid instruction.
-        """
+    def instruction_info(self, mnemonic):
         mnemonic = mnemonic.strip()
 
         if mnemonic not in self.instructions:
-            raise ValueError(f"Invalid instruction: {mnemonic}")
+            raise KeyError(f"Invalid instruction: {mnemonic}")
 
         return self.instructions[mnemonic]
 
 
-# ----------------- Testing -----------------
-
+# Testing
 if __name__ == "__main__":
     metadata = InstructionMetadata()
 
-    print(metadata.get_instruction_info("add"))
-    print(metadata.get_instruction_info("addi"))
-    print(metadata.get_instruction_info("sw"))
+    print(metadata.instruction_info("add"))
+    print(metadata.instruction_info("addi"))
+    print(metadata.instruction_info("sw"))
