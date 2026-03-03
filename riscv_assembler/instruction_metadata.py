@@ -47,13 +47,13 @@ class InstructionMetadata:
 
         return instruction_table
 
-    def instruction_info(self, mnemonic):
-        mnemonic = mnemonic.strip()
+    def instruction_info(self, name):
+        name = name.strip()
 
-        if mnemonic not in self.instructions:
-            raise KeyError(f"Invalid instruction: {mnemonic}")
+        if name not in self.instructions:
+            raise KeyError(f"Invalid instruction: {name}")
 
-        return self.instructions[mnemonic]
+        return self.instructions[name]
 
 
 # Testing
