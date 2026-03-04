@@ -6,3 +6,6 @@
 
 2. The use of KeyError Execption:- raise KeyError(f"Invalid register: {register_name}")
 
+------------------encoder.py------------------
+1. The alternate logic to represent negative number in their 2's complement form:-
+  value = (1 << bit_width) + value

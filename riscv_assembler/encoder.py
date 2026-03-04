@@ -27,25 +27,25 @@ class InstructionEncoder:
     # R-Type Encoding
     # Format: funct7 | rs2 | rs1 | funct3 | rd | opcode
     
-    def encode_r_type(self, mnemonic, rd, rs1, rs2):
+    def encode_r_type(self, name, rd, rs1, rs2):
 
         # Get instruction metadata
-        info = self.metadata.instruction_info(mnemonic)
+        data = self.metadata.instruction_info(name)
 
-        if info["type"] != "R":
-            raise ValueError(f"{mnemonic} is not an R-type instruction")
+        if data["type"] != "R":
+            raise KeyError(f"{name} is not an R-type instruction")
 
-        opcode = info["opcode"]
-        funct3 = info["funct3"]
-        funct7 = info["funct7"]
+        opcode = data["opcode"]
+        funct3 = data["funct3"]
+        funct7 = data["funct7"]
 
-        # Get register binaries
-        rd_bin = self.register_encoder.get_binary(rd)
-        rs1_bin = self.register_encoder.get_binary(rs1)
-        rs2_bin = self.register_encoder.get_binary(rs2)
+        # Getting register binary form
+        rd_binary = self.register_encoder.get_binary(rd)
+        rs1_binary = self.register_encoder.get_binary(rs1)
+        rs2_binary = self.register_encoder.get_binary(rs2)
 
-        # Construct instruction
-        binary_instruction = (funct7 +rs2_bin +rs1_bin +funct3 +rd_bin +opcode)
+        # Constructing instruction according to the instruction format
+        binary_instruction = (funct7 +rs2_binary +rs1_binary +funct3 +rd_binary +opcode)
 
         if len(binary_instruction) != 32:
             raise KeyError("Generated instruction is not 32 bits")
@@ -55,22 +55,22 @@ class InstructionEncoder:
     #I-Type Encoding
     #Format: imm[11:0] | rs1 | funct3 | rd | opcode
        
-    def encode_i_type(self, mnemonic, rd, rs1, imm_value):
+    def encode_i_type(self, name, rd, rs1, imm_value):
 
-        info = self.metadata.get_instruction_info(mnemonic)
+        data = self.metadata.instruction_info(name)
 
-        if info["type"] != "I":
-            raise KeyError(f"{mnemonic} is not an I-type instruction")
+        if data["type"] != "I":
+            raise KeyError(f"{name} is not an I-type instruction")
 
-        funct3 = info["funct3"]
-        opcode = info["opcode"]
+        funct3 = data["funct3"]
+        opcode = data["opcode"]
 
-        imm_bin = self.convert_immediate(int(imm_value), 12)
+        imm_binary = self.convert_immediate(int(imm_value), 12)
 
-        rd_bin = self.register_encoder.get_register_binary(rd)
-        rs1_bin = self.register_encoder.get_register_binary(rs1)
+        rd_bin = self.register_encoder.get_binary(rd)
+        rs1_bin = self.register_encoder.get_binary(rs1)
 
-        binary_instruction = (imm_bin +rs1_bin +funct3 +rd_bin +opcode)
+        binary_instruction = (imm_binary +rs1_bin +funct3 +rd_bin +opcode)
 
         if len(binary_instruction) != 32:
             raise KeyError("I-type instruction is not 32 bits")
@@ -80,32 +80,25 @@ class InstructionEncoder:
     #S-Type Encoding
     # Format: imm[11:5] | rs2 | rs1 | funct3 | imm[4:0] | opcode
 
-    def encode_s_type(self, mnemonic, rs2, rs1, imm_value):
+    def encode_s_type(self, name, rs2, rs1, imm_value):
 
-        info = self.metadata.get_instruction_info(mnemonic)
+        data = self.metadata.instruction_info(name)
 
-        if info["type"] != "S":
-            raise KeyError(f"{mnemonic} is not an S-type instruction")
+        if data["type"] != "S":
+            raise KeyError(f"{name} is not an S-type instruction")
 
-        funct3 = info["funct3"]
-        opcode = info["opcode"]
+        funct3 = data["funct3"]
+        opcode = data["opcode"]
 
         imm_bin = self.convert_immediate(int(imm_value), 12)
 
         imm_upper = imm_bin[:7]   # bits [11:5]
         imm_lower = imm_bin[7:]   # bits [4:0]
 
-        rs1_bin = self.register_encoder.get_register_binary(rs1)
-        rs2_bin = self.register_encoder.get_register_binary(rs2)
+        rs1_bin = self.register_encoder.get_binary(rs1)
+        rs2_bin = self.register_encoder.get_binary(rs2)
 
-        binary_instruction = (
-            imm_upper +
-            rs2_bin +
-            rs1_bin +
-            funct3 +
-            imm_lower +
-            opcode
-        )
+        binary_instruction = (imm_upper +rs2_bin +rs1_bin +funct3 +imm_lower +opcode)
 
         if len(binary_instruction) != 32:
             raise KeyError("S-type instruction is not 32 bits")
