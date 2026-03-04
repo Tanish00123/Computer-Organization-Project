@@ -10,21 +10,15 @@ class InstructionEncoder:
         self.metadata = InstructionMetadata()
 
     def convert_immediate(self, value, bit_width):
-        """
-        Converts signed integer into fixed-width 2's complement binary string.
-        Raises error if value exceeds allowed signed range.
-        """
 
         min_val = -(1 << (bit_width - 1))
         max_val = (1 << (bit_width - 1)) - 1
 
-        # Range check
         if value < min_val or value > max_val:
-            raise ValueError(
+            raise KeyError(
                 f"Immediate value {value} out of range for {bit_width}-bit signed field"
             )
 
-        # If negative, convert using 2's complement
         if value < 0:
             value = (1 << bit_width) + value
 
@@ -34,13 +28,9 @@ class InstructionEncoder:
     # Format: funct7 | rs2 | rs1 | funct3 | rd | opcode
     
     def encode_r_type(self, mnemonic, rd, rs1, rs2):
-        """
-        Encodes an R-type instruction into 32-bit binary string.
-        Example: add s1,s2,s3
-        """
 
         # Get instruction metadata
-        info = self.metadata.get_instruction_info(mnemonic)
+        info = self.metadata.instruction_info(mnemonic)
 
         if info["type"] != "R":
             raise ValueError(f"{mnemonic} is not an R-type instruction")
@@ -50,15 +40,15 @@ class InstructionEncoder:
         funct7 = info["funct7"]
 
         # Get register binaries
-        rd_bin = self.register_encoder.get_register_binary(rd)
-        rs1_bin = self.register_encoder.get_register_binary(rs1)
-        rs2_bin = self.register_encoder.get_register_binary(rs2)
+        rd_bin = self.register_encoder.get_binary(rd)
+        rs1_bin = self.register_encoder.get_binary(rs1)
+        rs2_bin = self.register_encoder.get_binary(rs2)
 
         # Construct instruction
         binary_instruction = (funct7 +rs2_bin +rs1_bin +funct3 +rd_bin +opcode)
 
         if len(binary_instruction) != 32:
-            raise ValueError("Generated instruction is not 32 bits")
+            raise KeyError("Generated instruction is not 32 bits")
 
         return binary_instruction
 
@@ -70,7 +60,7 @@ class InstructionEncoder:
         info = self.metadata.get_instruction_info(mnemonic)
 
         if info["type"] != "I":
-            raise ValueError(f"{mnemonic} is not an I-type instruction")
+            raise KeyError(f"{mnemonic} is not an I-type instruction")
 
         funct3 = info["funct3"]
         opcode = info["opcode"]
@@ -83,7 +73,7 @@ class InstructionEncoder:
         binary_instruction = (imm_bin +rs1_bin +funct3 +rd_bin +opcode)
 
         if len(binary_instruction) != 32:
-            raise ValueError("I-type instruction is not 32 bits")
+            raise KeyError("I-type instruction is not 32 bits")
 
         return binary_instruction
 
@@ -95,7 +85,7 @@ class InstructionEncoder:
         info = self.metadata.get_instruction_info(mnemonic)
 
         if info["type"] != "S":
-            raise ValueError(f"{mnemonic} is not an S-type instruction")
+            raise KeyError(f"{mnemonic} is not an S-type instruction")
 
         funct3 = info["funct3"]
         opcode = info["opcode"]
@@ -118,7 +108,7 @@ class InstructionEncoder:
         )
 
         if len(binary_instruction) != 32:
-            raise ValueError("S-type instruction is not 32 bits")
+            raise KeyError("S-type instruction is not 32 bits")
 
         return binary_instruction
 
