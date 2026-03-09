@@ -92,8 +92,8 @@ class InstructionEncoder:
 
         imm_bin = self.convert_immediate(int(imm_value), 12)
 
-        imm_upper = imm_bin[:7]   # bits [11:5]
-        imm_lower = imm_bin[7:]   # bits [4:0]
+        imm_upper = imm_bin[:7]   
+        imm_lower = imm_bin[7:]   
 
         rs1_bin = self.register_encoder.get_binary(rs1)
         rs2_bin = self.register_encoder.get_binary(rs2)
