@@ -3,8 +3,8 @@ class instruction_decoder:
         self.program_memory = []
 
 
-    def load_program(self, filename):
-        with open(filename, "r") as f:
+    def load_program(self, file_name):
+        with open(file_name, "r") as f:
             for line in f:
                 line = line.strip()
                 if line:
