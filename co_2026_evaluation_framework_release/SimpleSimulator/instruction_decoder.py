@@ -43,7 +43,7 @@ class instruction_decoder:
 
         elif instr_type == "U":
             imm = instr[0:20] + "000000000000"
-            return  self.signed_extend(int(imm, 2), 32)
+            return  self.sign_extend(int(imm, 2), 32)
 
         elif instr_type == "J":
             imm = (instr[0] +instr[12:20] +instr[11] +instr[1:11] +"0")
