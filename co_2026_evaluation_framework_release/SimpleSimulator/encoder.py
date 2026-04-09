@@ -30,8 +30,8 @@ class Executor:
 
         r1 = signed32(self.regs[rs1])
         r2 = signed32(self.regs[rs2])
-        next_pc = pc + 4   
-
+        next_pc = pc + 4 
+        
         #R-Type 
         if t == "R":
             if f3 == "000" and f7 == "0000000":   
@@ -144,8 +144,9 @@ class Executor:
             raise RuntimeError(f"Unknown instruction type '{t}' at PC=0x{pc:08X}")
 
         return next_pc
+    
 
-    def virtual_halt(self, decoded):
+    def is_virtual_halt(self, decoded):
         if decoded["type"] != "B":
             return False
         if decoded["funct3"] != "000":
