@@ -40,7 +40,7 @@ def run_simu(input_file,output_file):
             
             index = pc // 4
             
-            decoded =decoded_program[index]
+            decoded = decoded_program[index]
 
             trace(pc, regs, f)
 
