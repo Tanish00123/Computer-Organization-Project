@@ -52,7 +52,7 @@ def run_simu(input_file,output_file):
     
         dump =memory.dump_data()
         for addr, val in dump:
-            f.write(f"{addr}: {val}\n")
+            f.write(f"{addr}:{val}\n")
 
 
 
