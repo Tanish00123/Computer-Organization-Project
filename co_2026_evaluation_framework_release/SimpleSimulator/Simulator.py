@@ -1,55 +1,98 @@
 import sys
-from instruction_decoder import instruction_decoder
-from memory import Memory, init_registers
+from instruction_decoder import InstructionDecoder
+from memory import Memory, init_registers, InvalidMemAccess
 from encoder import Executor
 
+MAX_STEPS = 100000          #globally defining max no of steps;
 
-def binary_32(val):
-    return "0b" + format(val & 0xFFFFFFFF, '032b')
+def fmt_bin32(val):
+    return "0b" + format(val & 0xFFFFFFFF, "032b")
 
+def make_trace_line(pc, regs):
+    parts = [fmt_bin32(pc)] + [fmt_bin32(r) for r in regs]
+    return " ".join(parts) + " "
 
-def trace(pc, regs):
-    line = binary_32(pc)
-    for i in range(32):
-        line += " " + binary_32(regs[i])
-    line += " "
-    print(line)
+def simulate(prog):
+    decoder = InstructionDecoder()
+    decoder.program_memory = prog
+    decoded_all = decoder.decode_all()
 
-def run_simu(lines):
+    mem = Memory()
+    regs= init_registers()
+    exe = Executor(regs, mem)
 
-    decoder = instruction_decoder()
-    decoder.program_memory = lines
-
-    memory = Memory()
-    regs = init_registers()
-
-    instructions = [int(instr, 2) for instr in decoder.program_memory]
-    memory.load_program(instructions)
-
-    executor = Executor(regs, memory)
-
-    decoded_program = decoder.decode_program()
-
+    trace_lines = []
     pc = 0
+    halted = False
+    steps = 0
 
-    while True:
-        index = pc // 4
-        decoded = decoded_program[index]
+    while steps < MAX_STEPS:
+        idx =pc // 4
+        if pc < 0 or idx >= len(decoded_all):
+            break
+        dec = decoded_all[idx]
 
-        print(f"DEBUG: PC={pc}, type={decoded['type']}, funct3={decoded['funct3']}, imm={decoded['imm']}")
-
-        if executor.is_virtual_halt(decoded):
-            trace(pc, regs)
+        if exe.is_halt(dec):
+            trace_lines.append(make_trace_line(pc, regs))
+            halted = True
             break
 
-        pc = executor.execute(decoded, pc)
-        trace(pc, regs)
+        try:
+            npc = exe.execute(dec, pc)
+        except InvalidMemAccess as err:
+            line_no = (pc // 4) + 1
+            print("Error at line {}: Invalid memory access ({})".format(line_no, err))
+            return trace_lines, mem, False
 
-    dump = memory.dump_data()
-    for addr, val in dump:
-        print(f"{addr}:0b{val}")
+        trace_lines.append(make_trace_line(npc, regs))
+        pc = npc
+        steps += 1
 
+    return trace_lines, mem, halted
+
+
+def make_mem_dump(mem):
+    lines = []
+    for addr_str, val_str in mem.dump_data():
+        lines.append("{}:0b{}".format(addr_str, val_str))
+    return lines
+
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: python3 Simulator.py <input.txt> <output.txt> [readable.txt]")
+        sys.exit(1)
+
+    in_file = sys.argv[1]
+    out_file = sys.argv[2]
+    read_file = sys.argv[3] if len(sys.argv) > 3 else None
+
+    prog = []
+    with open(in_file, "r") as fh:
+        for line in fh:
+            line = line.strip()
+            if line:
+                prog.append(line)
+
+    if not prog:
+        print("Error: empty input file")
+        sys.exit(1)
+
+    trace_lines, mem, halted = simulate(prog)
+
+    all_lines = trace_lines[:]
+    if halted:
+        all_lines += make_mem_dump(mem)
+
+    content = "\n".join(all_lines)
+    if all_lines:
+        content += "\n"
+
+    with open(out_file, "w") as fh:
+        fh.write(content)
+
+    if read_file:
+        with open(read_file, "w") as fh:
+            fh.write(content)
 
 if __name__ == "__main__":
-    lines = sys.stdin.read().strip().split('\n')
-    run_simu(lines)
+    main()
